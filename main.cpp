@@ -13,7 +13,7 @@ int main( void )
 
         // Correcte verbindingen maken
         subscriber.connect("tcp://benternet.pxl-ea-ict.be:24042");
-        subscriber.setsockopt(ZMQ_SUBSCRIBE, "beer!>", 6); // Check of de delimiter juist is!
+        subscriber.setsockopt(ZMQ_SUBSCRIBE, "beer?>", 6); // Check of de delimiter juist is!
 
         pusher.connect("tcp://benternet.pxl-ea-ict.be:24041");
 
@@ -33,9 +33,9 @@ int main( void )
             std::cout << "Received: " << received_msg << std::endl;
 
             // Check of het bericht begint met "beer!>"
-            if (received_msg.rfind("beer!>", 0) == 0) {
+            if (received_msg.rfind("beer?>", 0) == 0) {
                 // Kies een random biermerk
-                std::string random_beer = beer_brands[std::rand() % beer_brands.size()];
+                std::string random_beer = "beer!>" +  beer_brands[std::rand() % beer_brands.size()];
                 std::cout << "Sending: " << random_beer << std::endl;
 
                 // Verzenden via ZMQ_PUSH
