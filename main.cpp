@@ -19,7 +19,7 @@ int main( void )
 
         // Biermerken lijst
         std::vector<std::string> beer_brands = {
-            "Jupiler", "Leffe", "Duvel", "Westmalle", "Chimay",
+            "Leffe", "Duvel", "Westmalle", "Chimay",
             "Cristal", "Karmeliet", "Rochefort", "Orval"
         };
 

@@ -1,108 +1,255 @@
-# Benternet Services using ZMQ in Qt Creator (C++)
+# 🍺 Beer Service - User Manual
 
-## 1. Task Management System
+  
 
-### Overview
+## Overview
 
-The Task Management System allows users to create, update, and delete tasks over Benternet. Each task includes a title, description, priority, and deadline. Clients can subscribe to receive updates when a task is modified.
+  
 
-### Architecture
+The **Beer Service** is a lightweight, networked service that recommends random Belgian beers over the Benternet protocol. It listens for beer requests and replies with a randomly chosen beer from a predefined list.
 
-- **Publisher**: Sends updates when tasks are added, modified, or deleted.
-    
-- **Subscriber**: Listens for task updates and synchronizes the task list.
-    
-- **Request-Reply**: Used for direct task queries (e.g., retrieving all tasks).
-    
+  
 
-### Features
+This guide explains how to use the service as a client.
 
-- Add new tasks with priority and deadline.
-    
-- Update existing tasks.
-    
-- Delete tasks.
-    
-- Retrieve all tasks.
-    
-- Notify clients of task changes.
-    
+  
 
-### Implementation
+---
 
-- Use **ZMQ PUB-SUB** for task updates.
-    
-- Use **ZMQ REQ-REP** for fetching and modifying tasks.
-    
-- Store tasks in a **SQLite database** or an in-memory data structure.
-    
+  
 
-## 2. Remote File Transfer Service
+## 🧰 Getting Started
 
-### Overview
+  
 
-This service allows clients to upload and download files over Benternet. It splits files into chunks for efficient transfer.
+### Prerequisites
 
-### Architecture
+  
 
-- **Client**: Requests to upload or download a file.
-    
-- **Server**: Manages file storage and handles requests.
-    
+- C++ compiler (e.g. g++, MSVC)
 
-### Features
+- [ZeroMQ (ZMQ)](https://zeromq.org/) library installed
 
-- Upload files in chunks.
-    
-- Download files in chunks.
-    
-- List available files.
-    
-- Resume interrupted transfers.
-    
+- A working Benternet server connection (host: `benternet.pxl-ea-ict.be`)
 
-### Implementation
+- Basic knowledge of C++ and networking
 
-- Use **ZMQ PUSH-PULL** for file transfer.
-    
-- Use **ZMQ REQ-REP** for file metadata requests (e.g., list files, check file size).
-    
-- Store files on a **local filesystem** or a **networked storage system**.
-    
+  
 
-## 3. Beer Service (Existing)
+---
 
-### Overview
+  
 
-The Beer Service allows users to request and recommend beers. Users can search for beers, get random recommendations, and log their favorite beers.
+## 🍻 Using the Beer Service
 
-### Architecture
+  
 
-- **Publisher**: Sends beer recommendations.
-    
-- **Subscriber**: Listens for new beer suggestions.
-    
-- **Request-Reply**: Queries for beer details.
-    
+### Step 1: Set Up the Connection
 
-### Features
+  
 
-- Get a random beer recommendation.
-    
-- Search for a specific beer.
-    
-- Rate and review beers.
-    
-- Retrieve user beer preferences.
-    
+Initialize your ZMQ context and sockets:
 
-### Implementation
+  
 
-- Use **ZMQ PUB-SUB** for beer recommendations.
-    
-- Use **ZMQ REQ-REP** for searching and rating beers.
-    
-- Store beer data in a **database** or a **local JSON file**.
-    
+```cpp
+
+zmq::context_t context(1);
+
+zmq::socket_t pusher(context, ZMQ_PUSH);
+
+zmq::socket_t subscriber(context, ZMQ_SUB);
+
+  
+
+subscriber.connect("tcp://benternet.pxl-ea-ict.be:24042");
+
+subscriber.setsockopt(ZMQ_SUBSCRIBE, "beer?>", 6);
+
+  
+
+pusher.connect("tcp://benternet.pxl-ea-ict.be:24041");
+
+```
+
+  
+
+---
+
+  
+
+### Step 2: Send a Beer Request
+
+  
+
+Clients can send a beer request using the following format:
+
+  
+
+```cpp
+
+// Format: beer?>[username or command]
+
+  
+
+// Example:
+
+std::string request = "beer?>jan";
+
+pusher.send(zmq::message_t(request.data(), request.size()));
+
+```
+
+  
+
+---
+
+  
+
+### Step 3: Receive the Response
+
+  
+
+Listen for responses from the service:
+
+  
+
+```cpp
+
+zmq::message_t msg;
+
+subscriber.recv(&msg);
+
+std::string reply(static_cast<char*>(msg.data()), msg.size());
+
+std::cout << "Beer Service Reply: " << reply << std::endl;
+
+```
+
+  
+
+---
+
+  
+
+## 📢 Request Format
+
+  
+
+The Beer Service recognizes the following input formats:
+
+  
+
+- `beer?>[name]` — Get a personalized beer recommendation  
+
+- `beer?>stats` — Get current request statistics  
+
+- `beer?>help` — Show help and available commands
+
+  
+
+---
+
+  
+
+## 📦 Response Format
+
+  
+
+The service will respond with:
+
+  
+
+- `beer!>[name], your beer is: [beername]`  
+
+- `beer!>Stats: name1:count1, name2:count2...`  
+
+- `beer!>Commands: help, [your name], stats`  
+
+  
+
+---
+
+  
+
+## 🧾 Example
+
+  
+
+```text
+
+// Request:
+
+beer?>tom
+
+  
+
+// Response:
+
+beer!>tom, your beer is: Westmalle
+
+```
+
+  
+
+```text
+
+// Request:
+
+beer?>stats
+
+  
+
+// Response:
+
+beer!>Stats: tom:3, jan:5, lisa:1
+
+```
+
+  
+
+---
+
+  
+
+## ❌ Error Handling
+
+  
+
+Currently, this service does not send error messages. Malformed topics are simply ignored.
+
+  
+
+---
+
+  
+
+## 🔧 Implementation Notes
+
+  
+
+- Uses `ZMQ_PUSH` and `ZMQ_SUB` sockets for communication
+
+- Beer list is randomly chosen from a hardcoded vector
+
+- Request counts are tracked in memory using a `std::map`
+
+  
+
+---
+
+  
+
+## 🧪 Future Improvements (Optional)
+
+  
+
+- Persistent tracking with SQLite  
+
+- User-submitted ratings and preferences  
+
+- GUI front-end (Qt-based)
+
+  
 
 ---
