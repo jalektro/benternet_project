@@ -140,11 +140,11 @@ The Beer Service recognizes the following input formats:
 
   
 
-- `beer?>get>[name]` — Get a personalized beer recommendation  
+- `beer?>[name]` — Get a personalized beer recommendation  
 
-- `beer?>stats>` — Get current request statistics  
+- `beer?>stats` — Get current request statistics  
 
-- `beer?>help>` — Show help and available commands
+- `beer?>help` — Show help and available commands
 
   
 
