@@ -150,6 +150,50 @@ pusher.connect("tcp://benternet.pxl-ea-ict.be:24041");
 
 ---
 
+🗺️ Flow Diagram
+
+```mermaid
+flowchart TD
+    subgraph UI
+        A[Input Field] --> B[Send Button]
+        A --> C[Subscribe Button]
+        A --> D[Unsubscribe Button]
+        E[Subscribe All Toggle] -->|checked/unchecked| F[MainWindow Slots]
+    end
+
+    B --> F[onSendClicked]
+    C --> G[onSubscribeClicked]
+    D --> H[onUnsubscribeClicked]
+
+    F --> I[emit sendRequest]
+    F --> J[emit subscribeRequest]
+    F --> K[emit unsubscribeRequest]
+
+    G --> J
+    H --> K
+    E --> L{checked?}
+    L -->|yes| M[emit subscribeAllRequest]
+    L -->|no| N[emit unsubscribeAllRequest]
+
+    subgraph Worker [ClientWorker]
+        I --> O[PUSH socket]
+        J --> P[SUB socket:settopic]
+        K --> P
+        M --> Q[SUB socket:set ""]
+        N --> R[SUB socket:unset ""]
+        O --> S[Network]
+        P --> S
+    end
+
+    S --> T[Service]
+    T --> U[Network]
+    U --> V[Worker SUB socket]
+    V --> W[ClientWorker emits replyReceived]
+    W --> X[MainWindow handleReply]
+    X --> Y[Log]
+ ```
+---
+
 ## 📦 Code Structure
 
 * **`main.cpp`**: Qt application bootstrap.
