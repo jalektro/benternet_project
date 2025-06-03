@@ -66,6 +66,19 @@ void ClientWorker::unsubscribeTopic(const QString& topic) {
     }
 }
 
+
+void ClientWorker::resetStats() {
+    try{
+        QByteArray cmd = QByteArrayLiteral("beer?>reset");
+        zmq::message_t msg(cmd.constData(), cmd.size());
+        if (!m_pusher.send(msg)) {
+            emit errorOccurred(QStringLiteral("Failed to send reset command"));
+            }
+        } catch (const zmq::error_t& e) {
+        emit errorOccurred(QStringLiteral("Reset push error: %1").arg(e.what()));
+        }
+}
+
 ClientWorker::~ClientWorker() {
     m_pollTimer.stop();
     // sockets & context will clean up automatically

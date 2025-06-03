@@ -25,6 +25,7 @@ signals:
     void unsubscribeRequest(const QString& topic);
     void subscribeAllRequest();
     void unsubscribeAllRequest();
+    void resetRequest();
 
 
 private slots:
@@ -39,6 +40,7 @@ private:
     QPushButton*  m_sendButton;
     QPushButton*  m_subButton;
     QPushButton*  m_unsubButton;
+    QPushButton*  m_resetButton;
     QPushButton*  m_subAllButton;
     QTextEdit*    m_log;
 

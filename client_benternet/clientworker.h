@@ -22,6 +22,7 @@ public slots:
     void unsubscribeAll();
     void subscribeTopic(const QString& topic);
     void unsubscribeTopic(const QString& topic);
+    void resetStats();
 
 signals:
     // Emitted when any reply arrives (topics starting with "service!>")

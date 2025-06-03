@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget* parent)
     , m_sendButton(new QPushButton(tr("Send"), this))
     , m_subButton(new QPushButton(tr("Subscribe"), this))
     , m_unsubButton(new QPushButton(tr("Unsubscribe"), this))
+    , m_resetButton(new QPushButton(tr("Reset Stats"), this))
     , m_subAllButton(new QPushButton(tr("Subscribe All"), this))
     , m_log(new QTextEdit(this))
     , m_worker(new ClientWorker("benternet.pxl-ea-ict.be", 24042, 24041))
@@ -33,6 +34,7 @@ MainWindow::MainWindow(QWidget* parent)
     row2->addWidget(m_subButton);
     row2->addWidget(m_unsubButton);
     row2->addWidget(m_subAllButton);
+    row2->addWidget(m_resetButton);
     mainLayout->addLayout(row2);
 
     // Log area
@@ -52,6 +54,10 @@ MainWindow::MainWindow(QWidget* parent)
             this, &MainWindow::onSubscribeClicked);
     connect(m_unsubButton, &QPushButton::clicked,
             this, &MainWindow::onUnsubscribeClicked);
+    connect(m_resetButton, &QPushButton::clicked, this, [this](){
+                m_log->append(tr("Sending manual reset request"));
+                emit resetRequest();
+            });
 
     // Subscribe All toggle setup
     m_subAllButton->setCheckable(true);
@@ -77,6 +83,9 @@ MainWindow::MainWindow(QWidget* parent)
             m_worker, &ClientWorker::subscribeAll);
     connect(this, &MainWindow::unsubscribeAllRequest,
             m_worker, &ClientWorker::unsubscribeAll);
+    connect(this, &MainWindow::resetRequest,
+            m_worker, &ClientWorker::resetStats);
+
 
     connect(m_worker, &ClientWorker::replyReceived,
             this, &MainWindow::handleReply);
@@ -128,6 +137,14 @@ void MainWindow::onUnsubscribeClicked() {
 
 void MainWindow::handleReply(const QString& reply) {
     m_log->append(tr("Received: %1").arg(reply));
+
+        // Detect reset confirmation
+       if (reply.startsWith(QLatin1String("beer!>Reset: OK"))) {
+            m_log->append(tr("✔ Stats have been reset."));
+            // Optionally disable the Reset button until next auto‐reset
+            m_resetButton->setEnabled(false);
+            // you could start a timer here to re‐enable at next midnight
+        }
 }
 
 void MainWindow::handleError(const QString& error) {
